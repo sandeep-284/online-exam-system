@@ -1,1 +1,741 @@
+﻿<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            var s = localStorage.getItem('theme');
+            if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme:dark)').matches))
+                document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+    </script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* ── Timer ────────────────────────────────────────────── */
+        .timer-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 13px;
+            border-radius: 99px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: background .3s, color .3s, border-color .3s;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: .02em;
+        }
+
+        .timer-pill.warn {
+            background: rgba(255, 59, 48, .12);
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .timer-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse-dot 1.2s ease-in-out infinite;
+        }
+
+        .timer-pill.warn .timer-dot {
+            background: var(--red);
+            animation: pulse-dot .6s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .4;
+                transform: scale(.7);
+            }
+        }
+
+        /* ── Leaderboard ──────────────────────────────────────── */
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lb-table th {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .lb-table td {
+            padding: 10px 12px;
+            font-size: .875rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .lb-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .lb-table tr {
+            transition: background .15s;
+        }
+
+        .lb-table tbody tr:hover {
+            background: var(--surface2);
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .rank-1 {
+            background: rgba(255, 196, 0, .18);
+            color: #c8860a;
+        }
+
+        .rank-2 {
+            background: rgba(174, 174, 178, .2);
+            color: #636366;
+        }
+
+        .rank-3 {
+            background: rgba(189, 116, 60, .18);
+            color: #a05c2a;
+        }
+
+        .rank-n {
+            background: var(--surface2);
+            color: var(--text-2);
+        }
+
+        /* ── Student / Admin tab navigation ──────────────────── */
+        .menu-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 5px;
+            background: var(--surface2);
+            border-radius: var(--radius-s);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .menu-tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: calc(var(--radius-s) - 2px);
+            border: none;
+            background: transparent;
+            color: var(--text-2);
+            font-size: .82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            white-space: nowrap;
+        }
+
+        .menu-tab-btn.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+            font-weight: 600;
+        }
+
+        .menu-tab-btn:hover:not(.active) {
+            color: var(--text);
+        }
+
+        /* ── Score bar ────────────────────────────────────────── */
+        .score-bar-wrap {
+            width: 90px;
+            background: var(--border);
+            border-radius: 99px;
+            height: 6px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        .score-bar-fill {
+            height: 6px;
+            border-radius: 99px;
+            background: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── NAV ──────────────────────────────────────────────── -->
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <div class="nav-icon">
+                    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12l2 2 4-4M12 2a10 10 0 100 20A10 10 0 0012 2z" />
+                    </svg>
+                </div>
+                <span class="nav-title">Exam Portal</span>
+            </div>
+            <div class="nav-right">
+                <button class="btn-icon" id="theme-btn" title="Toggle theme">
+                    <svg id="icon-sun" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" class="hidden">
+                        <circle cx="12" cy="12" r="5" />
+                        <path stroke-linecap="round"
+                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                    </svg>
+                    <svg id="icon-moon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" class="hidden">
+                        <path stroke-linecap="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                    </svg>
+                </button>
+                <div id="nav-user" class="hidden" style="display:none;align-items:center;gap:8px">
+                    <div class="nav-user-pill">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />
+                        </svg>
+                        <span id="welcome-msg"></span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Sign out</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="toast" class="hidden"></div>
+
+    <main>
+
+        <!-- 1. AUTH VIEW -->
+        <div id="auth-view">
+            <div class="card">
+                <div style="text-align:center;margin-bottom:22px">
+                    <div class="auth-logo">
+                        <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div class="t-2xl" id="auth-title" style="margin-bottom:4px">Welcome back</div>
+                    <div class="t-sm" style="color:var(--text-2)">Sign in to continue</div>
+                </div>
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div class="form-group"><label>Username</label><input type="text" id="username" required
+                            placeholder="Enter username"></div>
+                    <div class="form-group" style="margin-bottom:20px"><label>Password</label><input type="password"
+                            id="password" required placeholder="••••••••"></div>
+                    <button type="submit" id="auth-btn" class="btn-primary btn-full"
+                        style="padding:11px;font-size:.95rem">Sign In</button>
+                </form>
+                <div class="auth-divider"></div>
+                <div style="text-align:center">
+                    <a href="#" id="auth-toggle" onclick="toggleAuthMode()"
+                        style="font-size:.875rem;color:var(--accent);font-weight:500">New student? Create account →</a>
+                </div>
+                <!-- <div
+                    style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-xs);font-size:.78rem;color:var(--text-2);text-align:center;border:1px solid var(--border)">
+                    Admin · <strong style="color:var(--text)">admin</strong> / <strong
+                        style="color:var(--text)">admin123</strong>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- 2. ADMIN VIEW -->
+        <div id="admin-view" class="hidden">
+            <!-- Admin menu tabs: Questions | Leaderboard | Analytics -->
+            <div class="menu-tabs">
+                <button class="menu-tab-btn active" id="atab-questions" onclick="switchAdminTab('questions')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Questions
+                </button>
+                <button class="menu-tab-btn" id="atab-leaderboard" onclick="switchAdminTab('leaderboard')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Leaderboard
+                </button>
+                <button class="menu-tab-btn" id="atab-analytics" onclick="switchAdminTab('analytics')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Analytics
+                </button>
+            </div>
+
+            <!-- Questions Tab -->
+            <div id="admin-tab-questions">
+                <div class="card" style="margin-bottom:20px">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon"><svg width="13" height="13" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg></div>Add Question
+                        </div>
+                    </div>
+                    <form id="add-question-form" onsubmit="addQuestion(event)">
+                        <div class="form-group"><label>Question Text</label><textarea id="q_text" required rows="3"
+                                placeholder="Type the question here…"></textarea></div>
+                        <div class="grid-2">
+                            <div class="form-group"><label>Option A</label><input type="text" id="q_opt_a" required
+                                    placeholder="Option A"></div>
+                            <div class="form-group"><label>Option B</label><input type="text" id="q_opt_b" required
+                                    placeholder="Option B"></div>
+                            <div class="form-group"><label>Option C</label><input type="text" id="q_opt_c" required
+                                    placeholder="Option C"></div>
+                            <div class="form-group"><label>Option D</label><input type="text" id="q_opt_d" required
+                                    placeholder="Option D"></div>
+                            <div class="form-group"><label>Correct Answer</label><select id="q_correct">
+                                    <option value="A">Option A</option>
+                                    <option value="B">Option B</option>
+                                    <option value="C">Option C</option>
+                                    <option value="D">Option D</option>
+                                </select></div>
+                            <div class="form-group" style="justify-content:flex-end"><label
+                                    style="opacity:0">_</label><button type="submit" class="btn-success"
+                                    style="width:100%;padding:10px"><svg width="14" height="14" fill="none"
+                                        stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>Save Question</button></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon"><svg width="13" height="13" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                            </svg></div>Question Bank
+                    </div><span id="q-count" class="badge badge-muted"></span>
+                </div>
+                <div id="questions-list" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+
+            <!-- Leaderboard Tab (Admin) -->
+            <div id="admin-tab-leaderboard" class="hidden">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>Student Leaderboard
+                    </div>
+                </div>
+                <div class="card" style="padding:0;overflow:hidden">
+                    <div id="admin-lb-content">
+                        <div class="empty" style="padding:40px">Loading leaderboard…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab (Admin) -->
+            <div id="admin-tab-analytics" class="hidden"
+                style="display:flex;flex-direction:column;gap:20px;padding-bottom:40px">
+                <!-- populated by fetchAdminResults() -->
+            </div>
+        </div>
+
+        <!-- 3. STUDENT VIEW -->
+        <div id="student-view" class="hidden">
+            <!-- Student menu tabs: Exam | Leaderboard | Analytics -->
+            <div class="menu-tabs">
+                <button class="menu-tab-btn active" id="stab-exam" onclick="switchStudentTab('exam')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Exam
+                </button>
+                <button class="menu-tab-btn" id="stab-leaderboard" onclick="switchStudentTab('leaderboard')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Leaderboard
+                </button>
+                <button class="menu-tab-btn" id="stab-analytics" onclick="switchStudentTab('analytics')">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Analytics
+                </button>
+            </div>
+
+            <!-- Exam tab -->
+            <div id="student-tab-exam">
+                <div class="card"
+                    style="text-align:center;margin-bottom:24px;padding:40px 24px;position:relative;overflow:hidden">
+                    <div
+                        style="position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
+                    </div>
+                    <div
+                        style="position:absolute;bottom:-50px;left:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
+                    </div>
+                    <div
+                        style="display:inline-flex;width:56px;height:56px;border-radius:14px;background:var(--accent);align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,113,227,.3)">
+                        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div class="t-2xl" style="margin-bottom:6px">Ready for your exam?</div>
+                    <div class="t-sm" style="color:var(--text-2);margin-bottom:8px">10 minutes · Auto-submit when time
+                        runs out</div>
+                    <div
+                        style="display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;padding:5px 13px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem;color:var(--text-2)">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                        </svg>
+                        Ensure a stable connection before you start.
+                    </div>
+                    <br>
+                    <button onclick="startExam()" class="btn-cta">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Start Examination
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leaderboard tab (Student) -->
+            <div id="student-tab-leaderboard" class="hidden">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>Leaderboard
+                    </div>
+                </div>
+                <div class="card" style="padding:0;overflow:hidden">
+                    <div id="student-lb-content">
+                        <div class="empty" style="padding:40px">Loading leaderboard…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics tab (Student) -->
+            <div id="student-tab-analytics" class="hidden">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon"><svg width="13" height="13" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg></div>Performance Trend
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom:24px;padding:16px">
+                    <div style="position:relative;height:220px"><canvas id="performanceChart"></canvas></div>
+                </div>
+
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon"><svg width="13" height="13" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg></div>Attempt History
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Attempt</th>
+                                <th>Score</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-results-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. EXAM VIEW -->
+        <div id="exam-view" class="hidden" style="max-width:680px;margin:0 auto">
+            <div class="exam-sticky">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div
+                        style="width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center">
+                        <svg width="15" height="15" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="font-size:.9rem;font-weight:600;color:var(--text)">Examination</div>
+                        <div style="font-size:.72rem;color:var(--text-2)">Answer all questions carefully</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <!-- Timer pill -->
+                    <div class="timer-pill" id="exam-timer">
+                        <span class="timer-dot"></span>
+                        <span id="timer-display">10:00</span>
+                    </div>
+                    <span class="badge badge-accent">In Progress</span>
+                </div>
+            </div>
+            <form id="exam-form" onsubmit="submitExam(event)">
+                <div id="exam-questions-container"
+                    style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px"></div>
+                <button type="submit" class="btn-primary btn-full" style="padding:13px;font-size:.95rem"><svg width="16"
+                        height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>Submit Exam</button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        let currentUser = null, isLoginMode = true, perfChart = null, adminCharts = [];
+        let examTimer = null; // interval handle
+
+        /* ── Theme ── */
+        function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light' }
+        function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('icon-sun').classList.toggle('hidden', t === 'light'); document.getElementById('icon-moon').classList.toggle('hidden', t === 'dark') }
+        applyTheme(getTheme());
+        document.getElementById('theme-btn').onclick = () => applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+
+        /* ── Toast ── */
+        function toast(msg, err = false) { const el = document.getElementById('toast'); el.textContent = msg; el.style.background = err ? 'var(--red)' : 'var(--green)'; el.style.boxShadow = err ? '0 8px 24px rgba(255,59,48,.3)' : '0 8px 24px rgba(52,199,89,.3)'; el.className = 'toast-in'; clearTimeout(el._t); el._t = setTimeout(() => { el.className = 'toast-out'; setTimeout(() => el.className = 'hidden', 260) }, 3000) }
+
+        /* ── Views ── */
+        function showView(id) { ['auth-view', 'admin-view', 'student-view', 'exam-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden') }
+
+        /* ── Auth ── */
+        function toggleAuthMode() { isLoginMode = !isLoginMode; document.getElementById('auth-title').textContent = isLoginMode ? 'Welcome back' : 'Create account'; document.getElementById('auth-btn').textContent = isLoginMode ? 'Sign In' : 'Create Account'; document.getElementById('auth-toggle').textContent = isLoginMode ? 'New student? Create account →' : 'Already have an account? Sign in →' }
+        async function handleAuth(e) { e.preventDefault(); const action = isLoginMode ? 'login' : 'register'; const r = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, username: document.getElementById('username').value, password: document.getElementById('password').value }) }); const d = await r.json(); if (d.success) { toast(d.message || 'Success'); if (action === 'login') { currentUser = d.user; initDash() } else { toggleAuthMode(); document.getElementById('password').value = '' } } else toast(d.message, true) }
+        function logout() { currentUser = null; stopExamTimer(); const nu = document.getElementById('nav-user'); nu.classList.add('hidden'); nu.style.display = 'none'; document.getElementById('username').value = ''; document.getElementById('password').value = ''; showView('auth-view') }
+        function initDash() { const nu = document.getElementById('nav-user'); nu.classList.remove('hidden'); nu.style.display = 'flex'; document.getElementById('welcome-msg').textContent = currentUser.username; if (currentUser.role === 'admin') { showView('admin-view'); switchAdminTab('questions') } else { showView('student-view'); switchStudentTab('exam') } }
+
+        /* ────────────────────────────────────────────────────────
+         * STUDENT TABS: exam | leaderboard | analytics
+         * ──────────────────────────────────────────────────────── */
+        function switchStudentTab(tab) {
+            ['exam', 'leaderboard', 'analytics'].forEach(t => {
+                document.getElementById('student-tab-' + t).classList.toggle('hidden', t !== tab);
+                document.getElementById('stab-' + t).classList.toggle('active', t === tab);
+            });
+            if (tab === 'leaderboard') fetchLeaderboard('student');
+            if (tab === 'analytics') fetchStudentResults();
+        }
+
+        /* ────────────────────────────────────────────────────────
+         * ADMIN TABS: questions | leaderboard | analytics
+         * ──────────────────────────────────────────────────────── */
+        function switchAdminTab(tab) {
+            ['questions', 'leaderboard', 'analytics'].forEach(t => {
+                document.getElementById('admin-tab-' + t).classList.toggle('hidden', t !== tab);
+                document.getElementById('atab-' + t).classList.toggle('active', t === tab);
+            });
+            if (tab === 'questions') fetchQuestionsAdmin();
+            if (tab === 'leaderboard') fetchLeaderboard('admin');
+            if (tab === 'analytics') fetchAdminResults();
+        }
+
+        /* ────────────────────────────────────────────────────────
+         * LEADERBOARD
+         * ──────────────────────────────────────────────────────── */
+        async function fetchLeaderboard(role) {
+            const targetId = role === 'admin' ? 'admin-lb-content' : 'student-lb-content';
+            const el = document.getElementById(targetId);
+            el.innerHTML = '<div class="empty" style="padding:40px">Loading…</div>';
+            const data = await (await fetch('/api/leaderboard')).json();
+            if (!data.length) { el.innerHTML = '<div class="empty" style="padding:40px">No results yet. Be the first!</div>'; return; }
+            el.innerHTML = `<table class="lb-table">
+                <thead><tr>
+                    <th style="width:48px">Rank</th>
+                    <th>Student</th>
+                    <th>Best Score</th>
+                    <th>Avg Score</th>
+                    <th>Attempts</th>
+                </tr></thead>
+                <tbody>
+                ${data.map((row, i) => {
+                const rank = i + 1;
+                const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                const best = row.best_pct ? row.best_pct.toFixed(1) : '0.0';
+                const avg = row.avg_pct ? row.avg_pct.toFixed(1) : '0.0';
+                const isMe = currentUser && row.student_name === currentUser.username;
+                return `<tr style="${isMe ? 'background:var(--accent-bg)' : ''}">
+                        <td><span class="rank-badge ${rankClass}">${medal}</span></td>
+                        <td style="font-weight:${isMe ? '700' : '500'}">${row.student_name}${isMe ? ' <span class="badge badge-accent" style="font-size:.7rem;padding:2px 6px">You</span>' : ''}</td>
+                        <td>
+                            <span style="font-weight:600;color:${row.best_pct >= 50 ? 'var(--green)' : 'var(--red)'}">${best}%</span>
+                            <span class="score-bar-wrap"><span class="score-bar-fill" style="width:${Math.min(best, 100)}%"></span></span>
+                        </td>
+                        <td style="color:var(--text-2)">${avg}%</td>
+                        <td><span class="badge badge-muted">${row.attempts}</span></td>
+                    </tr>`;
+            }).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        /* ── Admin: questions ── */
+        async function fetchQuestionsAdmin() { const qs = await (await fetch('/api/questions?role=admin')).json(); const c = document.getElementById('questions-list'); document.getElementById('q-count').textContent = qs.length + ' question' + (qs.length !== 1 ? 's' : ''); if (!qs.length) { c.innerHTML = '<div class="empty">No questions yet. Add one above.</div>'; return } c.innerHTML = qs.map((q, i) => `<div class="card card-s"><div style="font-weight:600;font-size:.9rem;margin-bottom:10px;display:flex;align-items:flex-start"><span class="q-num">${i + 1}</span><span>${q.question_text}</span></div><div class="grid-2" style="margin-bottom:10px">${['A', 'B', 'C', 'D'].map(o => `<div class="t-sm" style="color:var(--text-2)"><strong>${o}.</strong> ${q['opt_' + o.toLowerCase()]}</div>`).join('')}</div><span class="badge badge-green">✓ Correct: ${q.correct_opt}</span></div>`).join('') }
+        async function addQuestion(e) { e.preventDefault(); const d = await (await fetch('/api/questions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question_text: document.getElementById('q_text').value, opt_a: document.getElementById('q_opt_a').value, opt_b: document.getElementById('q_opt_b').value, opt_c: document.getElementById('q_opt_c').value, opt_d: document.getElementById('q_opt_d').value, correct_opt: document.getElementById('q_correct').value }) })).json(); if (d.success) { toast(d.message); document.getElementById('add-question-form').reset(); fetchQuestionsAdmin() } }
+
+        /* ── Admin: analytics (former results) ── */
+        async function fetchAdminResults() {
+            const results = await (await fetch('/api/results?role=admin')).json();
+            const el = document.getElementById('admin-tab-analytics');
+            adminCharts.forEach(c => c.destroy()); adminCharts = [];
+            const g = {}; results.forEach(r => { if (!g[r.student_name]) g[r.student_name] = []; g[r.student_name].push(r) });
+            if (!Object.keys(g).length) { el.innerHTML = '<div class="card empty">No exam results yet.</div>'; return }
+            el.innerHTML = Object.entries(g).map(([name, data]) => { const sid = name.replace(/\W/g, ''); const best = Math.max(...data.map(r => r.score / r.total * 100)).toFixed(0); const avg = (data.reduce((s, r) => s + r.score / r.total * 100, 0) / data.length).toFixed(0); return `<div class="card" style="padding:0;overflow:hidden"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)"><div style="font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:99px;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:.75rem;font-weight:700">${name.slice(0, 2).toUpperCase()}</div>${name}</div><div style="display:flex;gap:8px"><span class="badge badge-muted">${data.length} attempt${data.length !== 1 ? 's' : ''}</span><span class="badge badge-accent">Avg ${avg}%</span><span class="badge badge-green">Best ${best}%</span></div></div><div style="padding:16px 20px"><div style="height:200px;position:relative;margin-bottom:16px"><canvas id="adminChart-${sid}"></canvas></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Score</th><th>Remarks</th><th>Action</th></tr></thead><tbody>${data.map((r, i) => `<tr><td><span class="badge badge-muted">#${data.length - i}</span></td><td><strong style="color:${r.score / r.total >= .5 ? 'var(--green)' : 'var(--red)'}">${r.score}/${r.total}</strong></td><td style="color:var(--text-2);font-style:italic">${r.remarks || '—'}</td><td><div class="remark-row"><input type="text" id="rem-${r.id}" placeholder="Add remark…"><button onclick="updateRemark(${r.id})" class="btn-primary btn-sm">Save</button></div></td></tr>`).join('')}</tbody></table></div></div></div>` }).join('');
+            Object.entries(g).forEach(([name, data]) => { const sid = name.replace(/\W/g, ''); const ctx = document.getElementById('adminChart-' + sid).getContext('2d'); const chrono = [...data].reverse(); const dk = getTheme() === 'dark'; const c = new Chart(ctx, { type: 'line', data: { labels: chrono.map((_, i) => `#${i + 1}`), datasets: [{ label: 'Score %', data: chrono.map(r => +(r.score / r.total * 100).toFixed(1)), borderColor: dk ? '#0a84ff' : '#0071e3', backgroundColor: dk ? 'rgba(10,132,255,.1)' : 'rgba(0,113,227,.08)', borderWidth: 2, fill: true, tension: .4, pointBackgroundColor: dk ? '#0a84ff' : '#0071e3', pointBorderColor: dk ? '#1c1c1e' : '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { color: dk ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)' }, border: { display: false } }, x: { ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { display: false }, border: { display: false } } } } }); adminCharts.push(c) })
+        }
+        async function updateRemark(id) { const d = await (await fetch('/api/results/' + id + '/remark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ remark: document.getElementById('rem-' + id).value }) })).json(); if (d.success) { toast(d.message); fetchAdminResults() } }
+
+        /* ── Student: results + chart ── */
+        async function fetchStudentResults() { const results = await (await fetch('/api/results?role=student&student_id=' + currentUser.id)).json(); document.getElementById('student-results-body').innerHTML = results.map((r, i) => `<tr><td><span class="badge badge-muted">Attempt #${results.length - i}</span></td><td><strong style="color:${r.score / r.total >= .5 ? 'var(--green)' : 'var(--red)'}">${r.score} / ${r.total}</strong></td><td style="color:var(--text-2)">${r.remarks || '—'}</td></tr>`).join('') || '<tr><td colspan="3" class="empty" style="padding:32px">No exams taken yet.</td></tr>'; updatePerfChart(results) }
+        function updatePerfChart(results) { if (perfChart) { perfChart.destroy(); perfChart = null } if (!results.length) return; const dk = getTheme() === 'dark'; const ctx = document.getElementById('performanceChart').getContext('2d'); const chrono = [...results].reverse(); perfChart = new Chart(ctx, { type: 'line', data: { labels: chrono.map((_, i) => `Attempt ${i + 1}`), datasets: [{ label: 'Score %', data: chrono.map(r => +(r.score / r.total * 100).toFixed(1)), borderColor: dk ? '#0a84ff' : '#0071e3', backgroundColor: dk ? 'rgba(10,132,255,.1)' : 'rgba(0,113,227,.08)', borderWidth: 2, fill: true, tension: .4, pointBackgroundColor: dk ? '#0a84ff' : '#0071e3', pointBorderColor: dk ? '#1c1c1e' : '#fff', pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 7 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { color: dk ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)' }, border: { display: false } }, x: { ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { display: false }, border: { display: false } } } } }) }
+
+        /* ─────────────────────────────────────────────────────────
+         * EXAM TIMER
+         * ──────────────────────────────────────────────────────── */
+        const EXAM_DURATION_SECS = 10 * 60; // 10 minutes
+
+        function startExamTimer() {
+            let remaining = EXAM_DURATION_SECS;
+            updateTimerDisplay(remaining);
+            examTimer = setInterval(() => {
+                remaining--;
+                updateTimerDisplay(remaining);
+                if (remaining <= 0) {
+                    stopExamTimer();
+                    toast('⏰ Time is up! Auto-submitting…', false);
+                    // Force-submit: collect whatever is answered
+                    autoSubmitExam();
+                }
+            }, 1000);
+        }
+
+        function stopExamTimer() {
+            if (examTimer) { clearInterval(examTimer); examTimer = null; }
+            // Reset timer display
+            const pill = document.getElementById('exam-timer');
+            if (pill) { pill.classList.remove('warn'); }
+            document.getElementById('timer-display').textContent = '10:00';
+        }
+
+        function updateTimerDisplay(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            document.getElementById('timer-display').textContent =
+                String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            const pill = document.getElementById('exam-timer');
+            pill.classList.toggle('warn', secs <= 120); // red at ≤2 min
+        }
+
+        /* ── Exam start/submit ── */
+        async function startExam() {
+            const qs = await (await fetch('/api/questions?role=student')).json();
+            if (!qs.length) { toast('No questions available.', true); return }
+            showView('exam-view');
+            document.getElementById('exam-questions-container').innerHTML = qs.map((q, i) =>
+                `<div class="card card-s card-hover">
+                    <div style="font-weight:600;font-size:.9rem;margin-bottom:12px;display:flex;align-items:flex-start">
+                        <span class="q-num">${i + 1}</span><span>${q.question_text}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                        ${['A', 'B', 'C', 'D'].map(opt =>
+                    `<label class="opt-label">
+                                <input type="radio" name="q_${q.id}" value="${opt}">
+                                <div class="opt-letter">${opt}</div>
+                                <span style="font-size:.875rem;color:var(--text)">${q['opt_' + opt.toLowerCase()]}</span>
+                            </label>`
+                ).join('')}
+                    </div>
+                </div>`
+            ).join('');
+            startExamTimer();
+        }
+
+        function autoSubmitExam() {
+            // Collect whatever answers exist (unanswered = omitted)
+            const form = document.getElementById('exam-form');
+            const fakeEvent = { preventDefault: () => { }, target: form };
+            submitExam(fakeEvent);
+        }
+
+        async function submitExam(e) {
+            e.preventDefault();
+            stopExamTimer();
+            const fd = new FormData(document.getElementById('exam-form'));
+            const answers = {};
+            for (let [k, v] of fd.entries()) if (k.startsWith('q_')) answers[k.replace('q_', '')] = v;
+            const d = await (await fetch('/api/exam/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: currentUser.id, answers })
+            })).json();
+            if (d.success) {
+                toast(`✓ Score: ${d.score}/${d.total}`);
+                showView('student-view');
+                switchStudentTab('analytics'); // go to analytics after submit
+                document.getElementById('exam-form').reset();
+            }
+        }
+    </script>
+</body>
+
+</html>
