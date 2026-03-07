@@ -1,0 +1,82 @@
+[
+  {
+    "question_text": "What is the capital of France?",
+    "opt_a": "Berlin",
+    "opt_b": "Madrid",
+    "opt_c": "Paris",
+    "opt_d": "Rome",
+    "correct_opt": "C"
+  },
+  {
+    "question_text": "Which data structure follows LIFO (Last In, First Out) order?",
+    "opt_a": "Queue",
+    "opt_b": "Stack",
+    "opt_c": "Linked List",
+    "opt_d": "Tree",
+    "correct_opt": "B"
+  },
+  {
+    "question_text": "What does HTTP stand for?",
+    "opt_a": "HyperText Transfer Protocol",
+    "opt_b": "High Transfer Text Protocol",
+    "opt_c": "HyperText Transmission Protocol",
+    "opt_d": "Hybrid Text Transfer Protocol",
+    "correct_opt": "A"
+  },
+  {
+    "question_text": "Which of the following is NOT a Python data type?",
+    "opt_a": "list",
+    "opt_b": "tuple",
+    "opt_c": "vector",
+    "opt_d": "dict",
+    "correct_opt": "C"
+  },
+  {
+    "question_text": "What is the time complexity of binary search?",
+    "opt_a": "O(n)",
+    "opt_b": "O(n²)",
+    "opt_c": "O(log n)",
+    "opt_d": "O(1)",
+    "correct_opt": "C"
+  },
+  {
+    "question_text": "Which keyword is used to define a function in Python?",
+    "opt_a": "func",
+    "opt_b": "define",
+    "opt_c": "function",
+    "opt_d": "def",
+    "correct_opt": "D"
+  },
+  {
+    "question_text": "What does SQL stand for?",
+    "opt_a": "Structured Query Language",
+    "opt_b": "Simple Query Language",
+    "opt_c": "Sequential Query Logic",
+    "opt_d": "Standard Query Language",
+    "correct_opt": "A"
+  },
+  {
+    "question_text": "Which of the following is used to create a virtual environment in Python?",
+    "opt_a": "pip install venv",
+    "opt_b": "python -m venv",
+    "opt_c": "python create env",
+    "opt_d": "virtualenv create",
+    "correct_opt": "B"
+  },
+  {
+    "question_text": "In HTML, which tag is used to link a CSS file?",
+    "opt_a": "<style>",
+    "opt_b": "<css>",
+    "opt_c": "<link>",
+    "opt_d": "<script>",
+    "correct_opt": "C"
+  },
+  {
+    "question_text": "Which HTTP method is used to send data to a server to create a resource?",
+    "opt_a": "GET",
+    "opt_b": "PUT",
+    "opt_c": "DELETE",
+    "opt_d": "POST",
+    "correct_opt": "D"
+  }
+]
