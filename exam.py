@@ -4,7 +4,8 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-DB_FILE = 'exam_system.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(BASE_DIR, "exam_system.db")
 
 def get_db():
     conn = sqlite3.connect(DB_FILE)
@@ -220,4 +221,5 @@ def add_remark(result_id):
     return jsonify({'success': True, 'message': 'Remark updated successfully.'})
 
 if __name__ == '__main__':
+
     app.run(debug=True, port=5000)
