@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -190,6 +190,249 @@
             border-radius: 99px;
             background: var(--accent);
         }
+
+        /* ── Edit Question Modal ──────────────────────────────── */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+        }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 100%;
+            max-width: 620px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, .28);
+            transform: translateY(20px) scale(.97);
+            transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), opacity .2s ease;
+            opacity: 0;
+        }
+
+        .modal-backdrop.open .modal-box {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .modal-title-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: var(--accent-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-2);
+            transition: background .15s, color .15s;
+        }
+
+        .modal-close:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+            justify-content: flex-end;
+        }
+
+        /* Question card action buttons */
+        .q-card-actions {
+            display: flex;
+            gap: 7px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: .8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-bg);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px;
+            border-radius: var(--radius-xs);
+            border: 1px solid transparent;
+            background: rgba(255, 59, 48, .1);
+            color: var(--red);
+            font-size: .8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 59, 48, .2);
+        }
+
+        /* ── Category chips ───────────────────────────────────── */
+        .cat-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 16px;
+        }
+
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 13px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-2);
+            font-size: .78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+
+        .cat-chip.active {
+            background: var(--accent-bg);
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .cat-chip:hover:not(.active) {
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .cat-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 99px;
+            background: var(--accent-bg);
+            color: var(--accent);
+            font-size: .72rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* ── Category card grid (student exam picker) ─────────── */
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .cat-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 22px 16px;
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            transition: border-color .2s, background .2s, transform .15s;
+            text-align: center;
+        }
+
+        .cat-card:hover {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+            transform: translateY(-2px);
+        }
+
+        .cat-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, .12);
+        }
+
+        .cat-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .cat-card-label {
+            font-weight: 600;
+            font-size: .9rem;
+            color: var(--text);
+        }
+
+        .cat-card-sub {
+            font-size: .75rem;
+            color: var(--text-2);
+        }
     </style>
 </head>
 
@@ -328,6 +571,11 @@
                                     <option value="C">Option C</option>
                                     <option value="D">Option D</option>
                                 </select></div>
+                            <div class="form-group"><label>Category</label>
+                                <input type="text" id="q_category" required placeholder="e.g. Computer Science"
+                                    list="cat-suggestions">
+                                <datalist id="cat-suggestions"></datalist>
+                            </div>
                             <div class="form-group" style="justify-content:flex-end"><label
                                     style="opacity:0">_</label><button type="submit" class="btn-success"
                                     style="width:100%;padding:10px"><svg width="14" height="14" fill="none"
@@ -346,6 +594,8 @@
                             </svg></div>Question Bank
                     </div><span id="q-count" class="badge badge-muted"></span>
                 </div>
+                <!-- Category filter chips -->
+                <div id="cat-filter-bar" class="cat-filter-bar"></div>
                 <div id="questions-list" style="display:flex;flex-direction:column;gap:10px"></div>
             </div>
 
@@ -402,10 +652,9 @@
                 </button>
             </div>
 
-            <!-- Exam tab -->
+            <!-- Exam tab - Category Picker -->
             <div id="student-tab-exam">
-                <div class="card"
-                    style="text-align:center;margin-bottom:24px;padding:40px 24px;position:relative;overflow:hidden">
+                <div class="card" style="margin-bottom:24px;padding:32px 28px;position:relative;overflow:hidden">
                     <div
                         style="position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
                     </div>
@@ -413,17 +662,17 @@
                         style="position:absolute;bottom:-50px;left:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
                     </div>
                     <div
-                        style="display:inline-flex;width:56px;height:56px;border-radius:14px;background:var(--accent);align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,113,227,.3)">
-                        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                        style="display:inline-flex;width:52px;height:52px;border-radius:14px;background:var(--accent);align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,113,227,.3)">
+                        <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                    <div class="t-2xl" style="margin-bottom:6px">Ready for your exam?</div>
-                    <div class="t-sm" style="color:var(--text-2);margin-bottom:8px">10 minutes · Auto-submit when time
-                        runs out</div>
+                    <div class="t-2xl" style="margin-bottom:6px">Choose your exam set</div>
+                    <div class="t-sm" style="color:var(--text-2);margin-bottom:4px">Select a category and start your
+                        timed exam · 10 min · Auto-submit</div>
                     <div
-                        style="display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;padding:5px 13px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem;color:var(--text-2)">
+                        style="display:inline-flex;align-items:center;gap:6px;margin-bottom:4px;padding:5px 13px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem;color:var(--text-2)">
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" />
@@ -431,17 +680,23 @@
                         </svg>
                         Ensure a stable connection before you start.
                     </div>
-                    <br>
-                    <button onclick="startExam()" class="btn-cta">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Start Examination
-                    </button>
+                    <!-- Category cards grid -->
+                    <div id="student-cat-grid" class="cat-grid">
+                        <div class="empty" style="padding:20px">Loading categories…</div>
+                    </div>
+                    <div style="text-align:center;margin-top:8px">
+                        <button id="start-exam-btn" onclick="startExam()" class="btn-cta" disabled
+                            style="opacity:.45;cursor:not-allowed">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Start Examination
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -542,6 +797,70 @@
 
     </main>
 
+    <!-- ── EDIT QUESTION MODAL ───────────────────────────────── -->
+    <div id="edit-modal" class="modal-backdrop" style="display:none" onclick="handleModalBackdropClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-title-icon">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    Edit Question
+                </div>
+                <button class="modal-close" onclick="closeEditModal()" title="Close">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="edit-question-form" onsubmit="saveEditQuestion(event)">
+                <input type="hidden" id="edit-q-id">
+                <div class="form-group"><label>Question Text</label><textarea id="edit-q-text" required rows="3"
+                        placeholder="Type the question here…"></textarea></div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Option A</label><input type="text" id="edit-q-opt-a" required
+                            placeholder="Option A"></div>
+                    <div class="form-group"><label>Option B</label><input type="text" id="edit-q-opt-b" required
+                            placeholder="Option B"></div>
+                    <div class="form-group"><label>Option C</label><input type="text" id="edit-q-opt-c" required
+                            placeholder="Option C"></div>
+                    <div class="form-group"><label>Option D</label><input type="text" id="edit-q-opt-d" required
+                            placeholder="Option D"></div>
+                    <div class="form-group">
+                        <label>Correct Answer</label>
+                        <select id="edit-q-correct">
+                            <option value="A">Option A</option>
+                            <option value="B">Option B</option>
+                            <option value="C">Option C</option>
+                            <option value="D">Option D</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Category</label>
+                        <input type="text" id="edit-q-category" required placeholder="e.g. Computer Science"
+                            list="cat-suggestions">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-edit" onclick="closeEditModal()"
+                        style="border-color:var(--border)">Cancel</button>
+                    <button type="submit" class="btn-success"
+                        style="padding:8px 20px;display:inline-flex;align-items:center;gap:6px">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let currentUser = null, isLoginMode = true, perfChart = null, adminCharts = [];
         let examTimer = null; // interval handle
@@ -572,6 +891,7 @@
                 document.getElementById('student-tab-' + t).classList.toggle('hidden', t !== tab);
                 document.getElementById('stab-' + t).classList.toggle('active', t === tab);
             });
+            if (tab === 'exam') fetchCategories();
             if (tab === 'leaderboard') fetchLeaderboard('student');
             if (tab === 'analytics') fetchStudentResults();
         }
@@ -629,9 +949,184 @@
             </table>`;
         }
 
+        /* ── Categories: shared helper — updates datalist & student grid ── */
+        let selectedCategory = null;
+
+        const CAT_ICONS = {
+            'Computer Science': '💻', 'Mathematics': '📐', 'Science': '🔬',
+            'History': '📜', 'Geography': '🌍', 'English': '📝',
+            'General Knowledge': '🧠', 'Physics': '⚡', 'Chemistry': '🧪',
+            'Biology': '🌿'
+        };
+
+        async function fetchCategories() {
+            const cats = await (await fetch('/api/categories')).json();
+            // Update the shared datalist for Add & Edit forms
+            ['cat-suggestions'].forEach(id => {
+                const dl = document.getElementById(id);
+                if (dl) dl.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+            });
+            // Student: render category cards
+            const grid = document.getElementById('student-cat-grid');
+            if (!grid) return;
+            if (!cats.length) {
+                grid.innerHTML = '<div class="empty" style="padding:20px">No exam categories available yet.</div>';
+                return;
+            }
+            grid.innerHTML = cats.map(cat => {
+                const icon = CAT_ICONS[cat] || '📚';
+                return `<div class="cat-card" id="catcard-${encodeURIComponent(cat)}" onclick="selectStudentCategory('${encodeURIComponent(cat)}')">
+                    <div class="cat-card-icon">${icon}</div>
+                    <div class="cat-card-label">${cat}</div>
+                    <div class="cat-card-sub">Tap to select</div>
+                </div>`;
+            }).join('');
+            // Reset selection
+            selectedCategory = null;
+            const btn = document.getElementById('start-exam-btn');
+            btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'not-allowed';
+        }
+
+        function selectStudentCategory(encodedCat) {
+            selectedCategory = decodeURIComponent(encodedCat);
+            document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('selected'));
+            const card = document.getElementById('catcard-' + encodedCat);
+            if (card) card.classList.add('selected');
+            const btn = document.getElementById('start-exam-btn');
+            btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+        }
+
         /* ── Admin: questions ── */
-        async function fetchQuestionsAdmin() { const qs = await (await fetch('/api/questions?role=admin')).json(); const c = document.getElementById('questions-list'); document.getElementById('q-count').textContent = qs.length + ' question' + (qs.length !== 1 ? 's' : ''); if (!qs.length) { c.innerHTML = '<div class="empty">No questions yet. Add one above.</div>'; return } c.innerHTML = qs.map((q, i) => `<div class="card card-s"><div style="font-weight:600;font-size:.9rem;margin-bottom:10px;display:flex;align-items:flex-start"><span class="q-num">${i + 1}</span><span>${q.question_text}</span></div><div class="grid-2" style="margin-bottom:10px">${['A', 'B', 'C', 'D'].map(o => `<div class="t-sm" style="color:var(--text-2)"><strong>${o}.</strong> ${q['opt_' + o.toLowerCase()]}</div>`).join('')}</div><span class="badge badge-green">✓ Correct: ${q.correct_opt}</span></div>`).join('') }
-        async function addQuestion(e) { e.preventDefault(); const d = await (await fetch('/api/questions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question_text: document.getElementById('q_text').value, opt_a: document.getElementById('q_opt_a').value, opt_b: document.getElementById('q_opt_b').value, opt_c: document.getElementById('q_opt_c').value, opt_d: document.getElementById('q_opt_d').value, correct_opt: document.getElementById('q_correct').value }) })).json(); if (d.success) { toast(d.message); document.getElementById('add-question-form').reset(); fetchQuestionsAdmin() } }
+        let adminCatFilter = 'all';
+
+        async function fetchQuestionsAdmin(catFilter) {
+            if (catFilter !== undefined) adminCatFilter = catFilter;
+            // Fetch all for chip counts, filtered for display
+            const allQs = await (await fetch('/api/questions?role=admin')).json();
+            const cats = [...new Set(allQs.map(q => q.category))].sort();
+
+            // Update datalist
+            const dl = document.getElementById('cat-suggestions');
+            if (dl) dl.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+
+            // Render filter chips
+            const bar = document.getElementById('cat-filter-bar');
+            bar.innerHTML = [
+                `<button class="cat-chip ${adminCatFilter === 'all' ? 'active' : ''}" onclick="fetchQuestionsAdmin('all')">All <span style="margin-left:3px;opacity:.6">(${allQs.length})</span></button>`,
+                ...cats.map(cat => {
+                    const cnt = allQs.filter(q => q.category === cat).length;
+                    const enc = encodeURIComponent(cat);
+                    return `<button class="cat-chip ${adminCatFilter === cat ? 'active' : ''}" onclick="fetchQuestionsAdmin(decodeURIComponent('${enc}'))">${cat} <span style="margin-left:3px;opacity:.6">(${cnt})</span></button>`;
+                })
+            ].join('');
+
+            // Filter questions
+            const qs = adminCatFilter === 'all' ? allQs : allQs.filter(q => q.category === adminCatFilter);
+            const c = document.getElementById('questions-list');
+            document.getElementById('q-count').textContent = qs.length + ' question' + (qs.length !== 1 ? 's' : '');
+            if (!qs.length) { c.innerHTML = '<div class="empty">No questions in this category yet.</div>'; return; }
+            c.innerHTML = qs.map((q, i) => `
+                <div class="card card-s">
+                    <div style="font-weight:600;font-size:.9rem;margin-bottom:10px;display:flex;align-items:flex-start">
+                        <span class="q-num">${i + 1}</span><span>${q.question_text}</span>
+                        <span class="cat-badge" style="margin-left:auto;white-space:nowrap">${q.category}</span>
+                    </div>
+                    <div class="grid-2" style="margin-bottom:10px">
+                        ${['A', 'B', 'C', 'D'].map(o => `<div class="t-sm" style="color:var(--text-2)"><strong>${o}.</strong> ${q['opt_' + o.toLowerCase()]}</div>`).join('')}
+                    </div>
+                    <span class="badge badge-green">✓ Correct: ${q.correct_opt}</span>
+                    <div class="q-card-actions">
+                        <button class="btn-edit" onclick="openEditModal(${q.id},'${encodeURIComponent(JSON.stringify(q))}')" title="Edit question">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Edit
+                        </button>
+                        <button class="btn-delete" onclick="deleteQuestion(${q.id})" title="Delete question">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        /* ── Edit Modal logic ── */
+        function openEditModal(id, encodedQ) {
+            const q = JSON.parse(decodeURIComponent(encodedQ));
+            document.getElementById('edit-q-id').value = id;
+            document.getElementById('edit-q-text').value = q.question_text;
+            document.getElementById('edit-q-opt-a').value = q.opt_a;
+            document.getElementById('edit-q-opt-b').value = q.opt_b;
+            document.getElementById('edit-q-opt-c').value = q.opt_c;
+            document.getElementById('edit-q-opt-d').value = q.opt_d;
+            document.getElementById('edit-q-correct').value = q.correct_opt;
+            document.getElementById('edit-q-category').value = q.category || '';
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => modal.classList.add('open'));
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('edit-modal');
+            modal.classList.remove('open');
+            setTimeout(() => { modal.style.display = 'none'; }, 250);
+        }
+
+        function handleModalBackdropClick(e) {
+            if (e.target === document.getElementById('edit-modal')) closeEditModal();
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
+
+        async function saveEditQuestion(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-q-id').value;
+            const payload = {
+                question_text: document.getElementById('edit-q-text').value,
+                opt_a: document.getElementById('edit-q-opt-a').value,
+                opt_b: document.getElementById('edit-q-opt-b').value,
+                opt_c: document.getElementById('edit-q-opt-c').value,
+                opt_d: document.getElementById('edit-q-opt-d').value,
+                correct_opt: document.getElementById('edit-q-correct').value,
+                category: document.getElementById('edit-q-category').value.trim() || 'General'
+            };
+            const d = await (await fetch('/api/questions/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })).json();
+            if (d.success) {
+                toast(d.message);
+                closeEditModal();
+                fetchQuestionsAdmin();
+            } else {
+                toast(d.message || 'Update failed.', true);
+            }
+        }
+
+        async function deleteQuestion(id) {
+            if (!confirm('Delete this question? This cannot be undone.')) return;
+            const d = await (await fetch('/api/questions/' + id, { method: 'DELETE' })).json();
+            if (d.success) { toast(d.message); fetchQuestionsAdmin(); }
+            else toast(d.message || 'Delete failed.', true);
+        }
+
+        async function addQuestion(e) {
+            e.preventDefault();
+            const d = await (await fetch('/api/questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question_text: document.getElementById('q_text').value,
+                    opt_a: document.getElementById('q_opt_a').value,
+                    opt_b: document.getElementById('q_opt_b').value,
+                    opt_c: document.getElementById('q_opt_c').value,
+                    opt_d: document.getElementById('q_opt_d').value,
+                    correct_opt: document.getElementById('q_correct').value,
+                    category: document.getElementById('q_category').value.trim() || 'General'
+                })
+            })).json();
+            if (d.success) { toast(d.message); document.getElementById('add-question-form').reset(); fetchQuestionsAdmin(); }
+            else toast(d.message || 'Failed to add question.', true);
+        }
 
         /* ── Admin: analytics (former results) ── */
         async function fetchAdminResults() {
@@ -688,8 +1183,10 @@
 
         /* ── Exam start/submit ── */
         async function startExam() {
-            const qs = await (await fetch('/api/questions?role=student')).json();
-            if (!qs.length) { toast('No questions available.', true); return }
+            if (!selectedCategory) { toast('Please select a category first.', true); return; }
+            const url = `/api/questions?role=student&category=${encodeURIComponent(selectedCategory)}`;
+            const qs = await (await fetch(url)).json();
+            if (!qs.length) { toast('No questions available in this category.', true); return; }
             showView('exam-view');
             document.getElementById('exam-questions-container').innerHTML = qs.map((q, i) =>
                 `<div class="card card-s card-hover">
