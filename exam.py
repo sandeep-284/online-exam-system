@@ -4,6 +4,7 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+# DB_FILE = 'exam_system.db'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "exam_system.db")
 
@@ -51,13 +52,23 @@ def init_db():
         )
     ''')
     
+    # Migrate: add category column if it doesn't exist
+    try:
+        c.execute("ALTER TABLE questions ADD COLUMN category TEXT NOT NULL DEFAULT 'Computer Science'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
+    # Ensure legacy rows (empty/null category) default to Computer Science
+    c.execute("UPDATE questions SET category = 'Computer Science' WHERE category IS NULL OR category = ''")
+
     # Create default admin if not exists
     c.execute("SELECT * FROM users WHERE username = 'admin'")
     if not c.fetchone():
         hashed_pw = generate_password_hash('admin123')
-        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
+        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
                   ('admin', hashed_pw, 'admin'))
-        
+
     conn.commit()
     conn.close()
 
@@ -110,27 +121,68 @@ def auth():
 def handle_questions():
     conn = get_db()
     c = conn.cursor()
-    
+
     if request.method == 'GET':
-        c.execute("SELECT * FROM questions")
-        questions = [dict(row) for row in c.fetchall()]
-        # Strip correct options if requested by a student (security best practice)
         role = request.args.get('role')
+        category = request.args.get('category')
+        if category:
+            c.execute("SELECT * FROM questions WHERE category = ?", (category,))
+        else:
+            c.execute("SELECT * FROM questions")
+        questions = [dict(row) for row in c.fetchall()]
+        # Strip correct options for student role (security)
         if role == 'student':
             for q in questions:
                 q.pop('correct_opt', None)
         conn.close()
         return jsonify(questions)
-        
+
     elif request.method == 'POST':
         data = request.json
+        category = data.get('category', 'General').strip() or 'General'
         c.execute('''
-            INSERT INTO questions (question_text, opt_a, opt_b, opt_c, opt_d, correct_opt)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (data['question_text'], data['opt_a'], data['opt_b'], data['opt_c'], data['opt_d'], data['correct_opt']))
+            INSERT INTO questions (question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, category)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (data['question_text'], data['opt_a'], data['opt_b'], data['opt_c'],
+              data['opt_d'], data['correct_opt'], category))
         conn.commit()
         conn.close()
         return jsonify({'success': True, 'message': 'Question added successfully.'})
+
+
+@app.route('/api/questions/<int:question_id>', methods=['PUT', 'DELETE'])
+def handle_question(question_id):
+    conn = get_db()
+    c = conn.cursor()
+
+    if request.method == 'PUT':
+        data = request.json
+        category = data.get('category', 'General').strip() or 'General'
+        c.execute('''
+            UPDATE questions
+            SET question_text = ?, opt_a = ?, opt_b = ?, opt_c = ?, opt_d = ?, correct_opt = ?, category = ?
+            WHERE id = ?
+        ''', (data['question_text'], data['opt_a'], data['opt_b'], data['opt_c'],
+              data['opt_d'], data['correct_opt'], category, question_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Question updated successfully.'})
+
+    elif request.method == 'DELETE':
+        c.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Question deleted.'})
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT category FROM questions ORDER BY category")
+    cats = [row['category'] for row in c.fetchall()]
+    conn.close()
+    return jsonify(cats)
+
 
 @app.route('/api/exam/submit', methods=['POST'])
 def submit_exam():
@@ -221,5 +273,4 @@ def add_remark(result_id):
     return jsonify({'success': True, 'message': 'Remark updated successfully.'})
 
 if __name__ == '__main__':
-
     app.run(debug=True, port=5000)
