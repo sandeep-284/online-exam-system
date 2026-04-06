@@ -1,7 +1,22 @@
 from flask import Flask, request, jsonify, render_template
 import sqlite3
 import os
+import re
 from werkzeug.security import generate_password_hash, check_password_hash
+
+def validate_password(password):
+    """Validate password strength. Returns (is_valid, error_message)."""
+    if len(password) < 6:
+        return False, 'Password must be at least 6 characters long.'
+    if not re.search(r'[a-z]', password):
+        return False, 'Password must contain at least one lowercase letter.'
+    if not re.search(r'[A-Z]', password):
+        return False, 'Password must contain at least one uppercase letter.'
+    if not re.search(r'[0-9]', password):
+        return False, 'Password must contain at least one number.'
+    if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]', password):
+        return False, 'Password must contain at least one special character.'
+    return True, ''
 
 app = Flask(__name__)
 # DB_FILE = 'exam_system.db'
@@ -52,9 +67,16 @@ def init_db():
         )
     ''')
     
-    # Migrate: add category column if it doesn't exist
+    # Migrate: add category column to questions if it doesn't exist
     try:
         c.execute("ALTER TABLE questions ADD COLUMN category TEXT NOT NULL DEFAULT 'Computer Science'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
+    # Migrate: add category column to results if it doesn't exist
+    try:
+        c.execute("ALTER TABLE results ADD COLUMN category TEXT DEFAULT 'General'")
         conn.commit()
     except sqlite3.OperationalError:
         pass  # Column already exists
@@ -65,7 +87,7 @@ def init_db():
     # Create default admin if not exists
     c.execute("SELECT * FROM users WHERE username = 'admin'")
     if not c.fetchone():
-        hashed_pw = generate_password_hash('admin123')
+        hashed_pw = generate_password_hash('Admin@123')
         c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
                   ('admin', hashed_pw, 'admin'))
 
@@ -87,12 +109,18 @@ def auth():
     action = data.get('action')
     username = data.get('username')
     password = data.get('password')
+    role = data.get('role', '')  # 'admin' or 'student' from the UI tabs
     
     conn = get_db()
     c = conn.cursor()
     
     if action == 'register':
         # Only students register via the UI
+        # Validate password strength
+        is_valid, err_msg = validate_password(password)
+        if not is_valid:
+            conn.close()
+            return jsonify({'success': False, 'message': err_msg})
         try:
             hashed_pw = generate_password_hash(password)
             c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
@@ -110,6 +138,12 @@ def auth():
         conn.close()
         
         if user and check_password_hash(user['password'], password):
+            # Verify role matches the selected login tab
+            if role and user['role'] != role:
+                if role == 'admin':
+                    return jsonify({'success': False, 'message': 'This account is not an admin. Please use Student Login.'})
+                else:
+                    return jsonify({'success': False, 'message': 'This account is not a student. Please use Admin Login.'})
             return jsonify({
                 'success': True, 
                 'user': {'id': user['id'], 'username': user['username'], 'role': user['role']}
@@ -189,12 +223,16 @@ def submit_exam():
     data = request.json
     student_id = data.get('student_id')
     answers = data.get('answers') # Format: {"question_id": "A", ...}
+    category = data.get('category', 'General')
     
     conn = get_db()
     c = conn.cursor()
     
-    # Calculate score securely on the backend
-    c.execute("SELECT id, correct_opt FROM questions")
+    # Calculate score — only count questions in the submitted category
+    if category:
+        c.execute("SELECT id, correct_opt FROM questions WHERE category = ?", (category,))
+    else:
+        c.execute("SELECT id, correct_opt FROM questions")
     correct_answers = {str(row['id']): row['correct_opt'] for row in c.fetchall()}
     
     total = len(correct_answers)
@@ -204,9 +242,9 @@ def submit_exam():
         if q_id in correct_answers and correct_answers[q_id] == ans:
             score += 1
             
-    # Save result
-    c.execute("INSERT INTO results (student_id, score, total) VALUES (?, ?, ?)", 
-              (student_id, score, total))
+    # Save result with category
+    c.execute("INSERT INTO results (student_id, score, total, category) VALUES (?, ?, ?, ?)", 
+              (student_id, score, total, category))
     conn.commit()
     conn.close()
     
@@ -216,24 +254,42 @@ def submit_exam():
 def get_results():
     role = request.args.get('role')
     student_id = request.args.get('student_id')
+    category = request.args.get('category')  # optional filter
     
     conn = get_db()
     c = conn.cursor()
     
     if role == 'admin':
-        c.execute('''
-            SELECT r.id, r.score, r.total, r.remarks, u.username as student_name 
-            FROM results r
-            JOIN users u ON r.student_id = u.id
-            ORDER BY r.id DESC
-        ''')
+        if category:
+            c.execute('''
+                SELECT r.id, r.score, r.total, r.remarks, r.category, u.username as student_name 
+                FROM results r
+                JOIN users u ON r.student_id = u.id
+                WHERE r.category = ?
+                ORDER BY r.id DESC
+            ''', (category,))
+        else:
+            c.execute('''
+                SELECT r.id, r.score, r.total, r.remarks, r.category, u.username as student_name 
+                FROM results r
+                JOIN users u ON r.student_id = u.id
+                ORDER BY r.id DESC
+            ''')
     else:
-        c.execute('''
-            SELECT score, total, remarks 
-            FROM results 
-            WHERE student_id = ?
-            ORDER BY id DESC
-        ''', (student_id,))
+        if category:
+            c.execute('''
+                SELECT score, total, remarks, category 
+                FROM results 
+                WHERE student_id = ? AND category = ?
+                ORDER BY id DESC
+            ''', (student_id, category))
+        else:
+            c.execute('''
+                SELECT score, total, remarks, category 
+                FROM results 
+                WHERE student_id = ?
+                ORDER BY id DESC
+            ''', (student_id,))
         
     results = [dict(row) for row in c.fetchall()]
     conn.close()
