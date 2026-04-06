@@ -115,18 +115,18 @@
         }
 
         .rank-1 {
-            background: rgba(255, 196, 0, .18);
-            color: #c8860a;
+            background: linear-gradient(135deg, rgba(255,196,0,.2), rgba(245,158,11,.15));
+            color: #d97706;
         }
 
         .rank-2 {
-            background: rgba(174, 174, 178, .2);
-            color: #636366;
+            background: rgba(148, 163, 184, .15);
+            color: #64748b;
         }
 
         .rank-3 {
-            background: rgba(189, 116, 60, .18);
-            color: #a05c2a;
+            background: rgba(180, 120, 70, .15);
+            color: #a0652a;
         }
 
         .rank-n {
@@ -403,24 +403,26 @@
         .cat-card:hover {
             border-color: var(--accent);
             background: var(--accent-bg);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-m);
         }
 
         .cat-card.selected {
             border-color: var(--accent);
             background: var(--accent-bg);
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, .12);
+            box-shadow: 0 0 0 4px var(--accent-bg), var(--shadow-glow);
         }
 
         .cat-card-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--accent);
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
         .cat-card-label {
@@ -484,35 +486,57 @@
 
         <!-- 1. AUTH VIEW -->
         <div id="auth-view">
-            <div class="card">
-                <div style="text-align:center;margin-bottom:22px">
+            <div class="card" style="position:relative;overflow:hidden">
+                <div class="orb orb-1"></div>
+                <div class="orb orb-2"></div>
+                <div style="text-align:center;margin-bottom:20px;position:relative;z-index:1">
                     <div class="auth-logo">
-                        <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+                        <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
                     <div class="t-2xl" id="auth-title" style="margin-bottom:4px">Welcome back</div>
-                    <div class="t-sm" style="color:var(--text-2)">Sign in to continue</div>
+                    <div class="t-sm" style="color:var(--text-2)">Sign in to your exam portal</div>
                 </div>
-                <form id="auth-form" onsubmit="handleAuth(event)">
+                <!-- Role Selector Tabs -->
+                <div class="role-tabs" style="position:relative;z-index:1">
+                    <button class="role-tab active" id="role-tab-admin" onclick="selectRole('admin')">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Admin Login
+                    </button>
+                    <button class="role-tab" id="role-tab-student" onclick="selectRole('student')">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                        </svg>
+                        Student Login
+                    </button>
+                </div>
+                <form id="auth-form" onsubmit="handleAuth(event)" style="position:relative;z-index:1">
                     <div class="form-group"><label>Username</label><input type="text" id="username" required
                             placeholder="Enter username"></div>
-                    <div class="form-group" style="margin-bottom:20px"><label>Password</label><input type="password"
-                            id="password" required placeholder="••••••••"></div>
+                    <div class="form-group"><label>Password</label><input type="password"
+                            id="password" required placeholder="••••••••" oninput="checkPasswordStrength()"></div>
+                    <!-- Password Strength Indicator (visible only during registration) -->
+                    <div id="pw-strength" class="pw-strength hidden">
+                        <div class="pw-rule" id="pw-len"><span class="pw-icon">○</span> At least 6 characters</div>
+                        <div class="pw-rule" id="pw-lower"><span class="pw-icon">○</span> One lowercase letter (a-z)</div>
+                        <div class="pw-rule" id="pw-upper"><span class="pw-icon">○</span> One uppercase letter (A-Z)</div>
+                        <div class="pw-rule" id="pw-num"><span class="pw-icon">○</span> One number (0-9)</div>
+                        <div class="pw-rule" id="pw-special"><span class="pw-icon">○</span> One special character (!@#$…)</div>
+                    </div>
                     <button type="submit" id="auth-btn" class="btn-primary btn-full"
-                        style="padding:11px;font-size:.95rem">Sign In</button>
+                        style="padding:12px;font-size:.95rem;margin-top:18px">Sign In</button>
                 </form>
-                <div class="auth-divider"></div>
-                <div style="text-align:center">
+                <div class="auth-divider" style="position:relative;z-index:1"></div>
+                <div id="auth-toggle-wrap" style="text-align:center;position:relative;z-index:1;display:none">
                     <a href="#" id="auth-toggle" onclick="toggleAuthMode()"
-                        style="font-size:.875rem;color:var(--accent);font-weight:500">New student? Create account →</a>
+                        style="font-size:.875rem;color:var(--accent);font-weight:600;transition:color .2s">New student? Create account →</a>
                 </div>
-                <!-- <div
-                    style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-xs);font-size:.78rem;color:var(--text-2);text-align:center;border:1px solid var(--border)">
-                    Admin · <strong style="color:var(--text)">admin</strong> / <strong
-                        style="color:var(--text)">admin123</strong>
-                </div> -->
             </div>
         </div>
 
@@ -654,48 +678,43 @@
 
             <!-- Exam tab - Category Picker -->
             <div id="student-tab-exam">
-                <div class="card" style="margin-bottom:24px;padding:32px 28px;position:relative;overflow:hidden">
-                    <div
-                        style="position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
-                    </div>
-                    <div
-                        style="position:absolute;bottom:-50px;left:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,var(--accent-bg) 0%,transparent 70%);pointer-events:none">
-                    </div>
-                    <div
-                        style="display:inline-flex;width:52px;height:52px;border-radius:14px;background:var(--accent);align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,113,227,.3)">
-                        <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <div class="t-2xl" style="margin-bottom:6px">Choose your exam set</div>
-                    <div class="t-sm" style="color:var(--text-2);margin-bottom:4px">Select a category and start your
-                        timed exam · 10 min · Auto-submit</div>
-                    <div
-                        style="display:inline-flex;align-items:center;gap:6px;margin-bottom:4px;padding:5px 13px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem;color:var(--text-2)">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
-                        </svg>
-                        Ensure a stable connection before you start.
-                    </div>
-                    <!-- Category cards grid -->
-                    <div id="student-cat-grid" class="cat-grid">
-                        <div class="empty" style="padding:20px">Loading categories…</div>
-                    </div>
-                    <div style="text-align:center;margin-top:8px">
-                        <button id="start-exam-btn" onclick="startExam()" class="btn-cta" disabled
-                            style="opacity:.45;cursor:not-allowed">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
-                                viewBox="0 0 24 24">
+                <div class="hero-banner">
+                    <div class="orb orb-1"></div>
+                    <div class="orb orb-2"></div>
+                    <div style="position:relative;z-index:1">
+                        <div class="hero-icon">
+                            <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Start Examination
-                        </button>
+                        </div>
+                        <div class="hero-title">Choose your exam set</div>
+                        <div class="hero-subtitle">Select a category and start your timed exam · 10 min · Auto-submit</div>
+                        <div class="info-pill">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                            </svg>
+                            Ensure a stable connection before you start.
+                        </div>
+                        <!-- Category cards grid -->
+                        <div id="student-cat-grid" class="cat-grid">
+                            <div class="empty" style="padding:20px">Loading categories…</div>
+                        </div>
+                        <div style="text-align:center;margin-top:12px">
+                            <button id="start-exam-btn" onclick="startExam()" class="btn-cta" disabled
+                                style="opacity:.45;cursor:not-allowed">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Start Examination
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -722,6 +741,9 @@
 
             <!-- Analytics tab (Student) -->
             <div id="student-tab-analytics" class="hidden">
+                <!-- Category filter chips -->
+                <div id="student-analytics-cat-bar" class="cat-filter-bar" style="margin-bottom:20px"></div>
+
                 <div class="section-header">
                     <div class="section-title">
                         <div class="section-icon"><svg width="13" height="13" fill="none" stroke="currentColor"
@@ -749,6 +771,7 @@
                         <thead>
                             <tr>
                                 <th>Attempt</th>
+                                <th>Set</th>
                                 <th>Score</th>
                                 <th>Remarks</th>
                             </tr>
@@ -796,6 +819,10 @@
         </div>
 
     </main>
+
+    <footer class="site-footer">
+        <span>Exam Portal</span> — Empowering education through technology
+    </footer>
 
     <!-- ── EDIT QUESTION MODAL ───────────────────────────────── -->
     <div id="edit-modal" class="modal-backdrop" style="display:none" onclick="handleModalBackdropClick(event)">
@@ -864,12 +891,13 @@
     <script>
         let currentUser = null, isLoginMode = true, perfChart = null, adminCharts = [];
         let examTimer = null; // interval handle
+        let selectedRole = 'admin'; // default role tab
 
         /* ── Theme ── */
         function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light' }
-        function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('icon-sun').classList.toggle('hidden', t === 'light'); document.getElementById('icon-moon').classList.toggle('hidden', t === 'dark') }
+        function applyTheme(t, animate) { if (animate) document.documentElement.classList.add('theme-transition'); document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('icon-sun').classList.toggle('hidden', t === 'light'); document.getElementById('icon-moon').classList.toggle('hidden', t === 'dark'); if (animate) setTimeout(() => document.documentElement.classList.remove('theme-transition'), 500); }
         applyTheme(getTheme());
-        document.getElementById('theme-btn').onclick = () => applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+        document.getElementById('theme-btn').onclick = () => applyTheme(getTheme() === 'dark' ? 'light' : 'dark', true);
 
         /* ── Toast ── */
         function toast(msg, err = false) { const el = document.getElementById('toast'); el.textContent = msg; el.style.background = err ? 'var(--red)' : 'var(--green)'; el.style.boxShadow = err ? '0 8px 24px rgba(255,59,48,.3)' : '0 8px 24px rgba(52,199,89,.3)'; el.className = 'toast-in'; clearTimeout(el._t); el._t = setTimeout(() => { el.className = 'toast-out'; setTimeout(() => el.className = 'hidden', 260) }, 3000) }
@@ -877,10 +905,87 @@
         /* ── Views ── */
         function showView(id) { ['auth-view', 'admin-view', 'student-view', 'exam-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden') }
 
+        /* ── Role Selector ── */
+        function selectRole(role) {
+            selectedRole = role;
+            document.getElementById('role-tab-admin').classList.toggle('active', role === 'admin');
+            document.getElementById('role-tab-student').classList.toggle('active', role === 'student');
+            // Only students can register
+            const toggleWrap = document.getElementById('auth-toggle-wrap');
+            if (role === 'admin') {
+                toggleWrap.style.display = 'none';
+                // Force back to login mode if currently in register mode
+                if (!isLoginMode) toggleAuthMode();
+            } else {
+                toggleWrap.style.display = 'block';
+            }
+        }
+        // Initialize on page load
+        selectRole('admin');
+
+        /* ── Password Strength ── */
+        function checkPasswordStrength() {
+            if (isLoginMode) return;
+            const pw = document.getElementById('password').value;
+            const rules = [
+                { id: 'pw-len', pass: pw.length >= 6 },
+                { id: 'pw-lower', pass: /[a-z]/.test(pw) },
+                { id: 'pw-upper', pass: /[A-Z]/.test(pw) },
+                { id: 'pw-num', pass: /[0-9]/.test(pw) },
+                { id: 'pw-special', pass: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) }
+            ];
+            rules.forEach(r => {
+                const el = document.getElementById(r.id);
+                el.classList.toggle('pass', r.pass);
+                el.querySelector('.pw-icon').textContent = r.pass ? '✓' : '○';
+            });
+        }
+
+        function isPasswordStrong() {
+            const pw = document.getElementById('password').value;
+            return pw.length >= 6 &&
+                /[a-z]/.test(pw) && /[A-Z]/.test(pw) &&
+                /[0-9]/.test(pw) && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
+        }
+
         /* ── Auth ── */
-        function toggleAuthMode() { isLoginMode = !isLoginMode; document.getElementById('auth-title').textContent = isLoginMode ? 'Welcome back' : 'Create account'; document.getElementById('auth-btn').textContent = isLoginMode ? 'Sign In' : 'Create Account'; document.getElementById('auth-toggle').textContent = isLoginMode ? 'New student? Create account →' : 'Already have an account? Sign in →' }
-        async function handleAuth(e) { e.preventDefault(); const action = isLoginMode ? 'login' : 'register'; const r = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, username: document.getElementById('username').value, password: document.getElementById('password').value }) }); const d = await r.json(); if (d.success) { toast(d.message || 'Success'); if (action === 'login') { currentUser = d.user; initDash() } else { toggleAuthMode(); document.getElementById('password').value = '' } } else toast(d.message, true) }
-        function logout() { currentUser = null; stopExamTimer(); const nu = document.getElementById('nav-user'); nu.classList.add('hidden'); nu.style.display = 'none'; document.getElementById('username').value = ''; document.getElementById('password').value = ''; showView('auth-view') }
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').textContent = isLoginMode ? 'Welcome back' : 'Create account';
+            document.getElementById('auth-btn').textContent = isLoginMode ? 'Sign In' : 'Create Account';
+            document.getElementById('auth-toggle').textContent = isLoginMode ? 'New student? Create account →' : 'Already have an account? Sign in →';
+            // Show/hide password strength indicator
+            document.getElementById('pw-strength').classList.toggle('hidden', isLoginMode);
+            if (!isLoginMode) checkPasswordStrength();
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const action = isLoginMode ? 'login' : 'register';
+            // Client-side password validation for registration
+            if (action === 'register' && !isPasswordStrong()) {
+                toast('Password does not meet all strength requirements.', true);
+                return;
+            }
+            const r = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action,
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                    role: selectedRole
+                })
+            });
+            const d = await r.json();
+            if (d.success) {
+                toast(d.message || 'Success');
+                if (action === 'login') { currentUser = d.user; initDash() }
+                else { toggleAuthMode(); document.getElementById('password').value = '' }
+            } else toast(d.message, true);
+        }
+
+        function logout() { currentUser = null; stopExamTimer(); const nu = document.getElementById('nav-user'); nu.classList.add('hidden'); nu.style.display = 'none'; document.getElementById('username').value = ''; document.getElementById('password').value = ''; isLoginMode = true; document.getElementById('auth-title').textContent = 'Welcome back'; document.getElementById('auth-btn').textContent = 'Sign In'; document.getElementById('pw-strength').classList.add('hidden'); selectRole('admin'); showView('auth-view') }
         function initDash() { const nu = document.getElementById('nav-user'); nu.classList.remove('hidden'); nu.style.display = 'flex'; document.getElementById('welcome-msg').textContent = currentUser.username; if (currentUser.role === 'admin') { showView('admin-view'); switchAdminTab('questions') } else { showView('student-view'); switchStudentTab('exam') } }
 
         /* ────────────────────────────────────────────────────────
@@ -1141,7 +1246,42 @@
         async function updateRemark(id) { const d = await (await fetch('/api/results/' + id + '/remark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ remark: document.getElementById('rem-' + id).value }) })).json(); if (d.success) { toast(d.message); fetchAdminResults() } }
 
         /* ── Student: results + chart ── */
-        async function fetchStudentResults() { const results = await (await fetch('/api/results?role=student&student_id=' + currentUser.id)).json(); document.getElementById('student-results-body').innerHTML = results.map((r, i) => `<tr><td><span class="badge badge-muted">Attempt #${results.length - i}</span></td><td><strong style="color:${r.score / r.total >= .5 ? 'var(--green)' : 'var(--red)'}">${r.score} / ${r.total}</strong></td><td style="color:var(--text-2)">${r.remarks || '—'}</td></tr>`).join('') || '<tr><td colspan="3" class="empty" style="padding:32px">No exams taken yet.</td></tr>'; updatePerfChart(results) }
+        let studentAnalyticsCatFilter = 'all';
+
+        async function fetchStudentResults(catFilter) {
+            if (catFilter !== undefined) studentAnalyticsCatFilter = catFilter;
+
+            // Fetch all results to build category chips, then filter for display
+            const allResults = await (await fetch('/api/results?role=student&student_id=' + currentUser.id)).json();
+            const cats = [...new Set(allResults.map(r => r.category).filter(Boolean))].sort();
+
+            // Render category filter chips
+            const bar = document.getElementById('student-analytics-cat-bar');
+            bar.innerHTML = [
+                `<button class="cat-chip ${studentAnalyticsCatFilter === 'all' ? 'active' : ''}" onclick="fetchStudentResults('all')">All <span style="margin-left:3px;opacity:.6">(${allResults.length})</span></button>`,
+                ...cats.map(cat => {
+                    const cnt = allResults.filter(r => r.category === cat).length;
+                    const enc = encodeURIComponent(cat);
+                    return `<button class="cat-chip ${studentAnalyticsCatFilter === cat ? 'active' : ''}" onclick="fetchStudentResults(decodeURIComponent('${enc}'))">${cat} <span style="margin-left:3px;opacity:.6">(${cnt})</span></button>`;
+                })
+            ].join('');
+
+            // Filter results for display
+            const results = studentAnalyticsCatFilter === 'all'
+                ? allResults
+                : allResults.filter(r => r.category === studentAnalyticsCatFilter);
+
+            document.getElementById('student-results-body').innerHTML = results.map((r, i) =>
+                `<tr>
+                    <td><span class="badge badge-muted">Attempt #${results.length - i}</span></td>
+                    <td><span class="cat-badge">${r.category || 'General'}</span></td>
+                    <td><strong style="color:${r.score / r.total >= .5 ? 'var(--green)' : 'var(--red)'}">${r.score} / ${r.total}</strong></td>
+                    <td style="color:var(--text-2)">${r.remarks || '—'}</td>
+                </tr>`
+            ).join('') || '<tr><td colspan="4" class="empty" style="padding:32px">No exams taken yet.</td></tr>';
+
+            updatePerfChart(results);
+        }
         function updatePerfChart(results) { if (perfChart) { perfChart.destroy(); perfChart = null } if (!results.length) return; const dk = getTheme() === 'dark'; const ctx = document.getElementById('performanceChart').getContext('2d'); const chrono = [...results].reverse(); perfChart = new Chart(ctx, { type: 'line', data: { labels: chrono.map((_, i) => `Attempt ${i + 1}`), datasets: [{ label: 'Score %', data: chrono.map(r => +(r.score / r.total * 100).toFixed(1)), borderColor: dk ? '#0a84ff' : '#0071e3', backgroundColor: dk ? 'rgba(10,132,255,.1)' : 'rgba(0,113,227,.08)', borderWidth: 2, fill: true, tension: .4, pointBackgroundColor: dk ? '#0a84ff' : '#0071e3', pointBorderColor: dk ? '#1c1c1e' : '#fff', pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 7 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { color: dk ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)' }, border: { display: false } }, x: { ticks: { color: dk ? '#8e8e93' : '#6e6e73', font: { size: 11 } }, grid: { display: false }, border: { display: false } } } } }) }
 
         /* ─────────────────────────────────────────────────────────
@@ -1223,7 +1363,7 @@
             const d = await (await fetch('/api/exam/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: currentUser.id, answers })
+                body: JSON.stringify({ student_id: currentUser.id, answers, category: selectedCategory })
             })).json();
             if (d.success) {
                 toast(`✓ Score: ${d.score}/${d.total}`);
